@@ -1,0 +1,197 @@
+/* GENEL AYARLAR */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+/* KARTLAR VE KUTULAR */
+div {
+  box-sizing: border-box;
+}
+
+/* ANA KAPLAYICI (Container) */
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* INPUTLAR VE FORMLAR */
+input, textarea, select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+input:focus, textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0,123,255,0.3);
+}
+
+/* BUTONLAR */
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Buton Renkleri */
+/* GÜÇLÜ BUTON STİLİ */
+.btn-primary {
+  background-color: #4facfe; /* Açık Mavi */
+  background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); /* Gradyan Geçiş */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 30px; /* Yuvarlak kenarlar (Hap gibi) */
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Hafif gölge */
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Yazı ile ikon arası boşluk */
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px); /* Üzerine gelince hafif yukarı kalksın */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Gölgeyi büyüt */
+  filter: brightness(1.1);
+}
+.btn-success { background-color: #28a745; color: white; } /* Yeşil */
+.btn-danger { background-color: #dc3545; color: white; }  /* Kırmızı */
+
+/* TICKET KARTLARI */
+.ticket-card {
+  border-left: 5px solid #007bff; /* Sol taraf mavi çizgi */
+  background: #fff;
+  padding: 20px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* TICKET DURUM RENKLERİ */
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.status-Open { background: #e2e6ea; color: #333; }
+.status-High { color: red; font-weight: bold; }
+
+/* MESAJ BALONCUKLARI */
+.message-bubble {
+  background: #e9ecef;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  position: relative;
+}
+.message-user {
+  font-size: 13px;
+  color: #007bff;
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+}
+/* --- MODERN GİRİŞ / KAYIT EKRANLARI --- */
+
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Tüm ekranı kapla */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Mor-Mavi Arkaplan */
+}
+
+.auth-box {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.auth-title {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 24px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #f9f9f9;
+}
+
+.auth-input:focus {
+  border-color: #764ba2;
+  background-color: #fff;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 12px;
+  background: #764ba2; /* Mor buton */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.auth-btn:hover {
+  background: #5b3a82;
+}
+
+.auth-link {
+  display: block;
+  margin-top: 15px;
+  color: #666;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.auth-link span {
+  color: #764ba2;
+  font-weight: bold;
+}

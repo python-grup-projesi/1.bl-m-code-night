@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # 1) MongoDB
+  mongo:
+    image: mongo:7
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  # 2) Ticket Service (Core Backend - Node/Express varsayıyorum)
+  ticket-service:
+    build: ./ticket-service
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=${TICKET_PORT}
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - AGENT_SERVICE_URL=${AGENT_SERVICE_URL}
+    depends_on:
+      - mongo
+    # Sağlıklı çalışınca başlasın istersen healthcheck ekleyebilirsin (curl gerekir)
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -fsS http://localhost:5000/health || exit 1"]
+    #   interval: 10s
+    #   timeout: 3s
+    #   retries: 10
+
+  # 3) Agent Service (AI Worker)
+  agent-service:
+    build: ./agent-service
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=${AGENT_PORT}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - TICKET_SERVICE_URL=${TICKET_SERVICE_URL}
+    depends_on:
+      - ticket-service
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -fsS http://localhost:5001/health || exit 1"]
+    #   interval: 10s
+    #   timeout: 3s
+    #   retries: 10
+
+volumes:
+  mongo-data:
