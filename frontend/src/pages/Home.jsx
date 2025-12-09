@@ -6,18 +6,17 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [tickets, setTickets] = useState([]);
   
-  // Form verileri (Varsayılan olarak boş bırakıyoruz ki AI devreye girsin)
+  // Form Verileri
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState(""); // Boş = AI
-  const [department, setDepartment] = useState(""); // Boş = AI
+  const [priority, setPriority] = useState(""); 
+  const [department, setDepartment] = useState(""); 
 
-  // Yükleniyor durumu (AI çalışırken butonu kilitlemek için)
   const [loading, setLoading] = useState(false);
 
-  // Filtreleme State'leri
+  // 🛠️ FİLTRELEME VE ARAMA STATE'LERİ
   const [filterStatus, setFilterStatus] = useState("All"); 
-  const [sortOrder, setSortOrder] = useState("Newest");    
+  const [searchTerm, setSearchTerm] = useState(""); 
 
   const navigate = useNavigate();
 
@@ -28,36 +27,68 @@ export default function Home() {
     } else {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
-      fetchTickets(parsedUser._id); 
+      // Sayfa ilk açıldığında verileri çek
+      fetchTickets(parsedUser._id, "All", ""); 
     }
   }, [navigate]);
 
-  const fetchTickets = async (userId) => {
+  // 🔄 FİLTRE DEĞİŞİNCE OTOMATİK ÇALIŞIR
+  useEffect(() => {
+    if (user) {
+        fetchTickets(user._id, filterStatus, searchTerm);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStatus]); // Sadece filterStatus değişince tetiklenir
+
+  // --- API'YE İSTEK ATAN ANA FONKSİYON ---
+  const fetchTickets = async (userId, status, search) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/tickets?userId=${userId}`);
+      // URL'i dinamik oluşturuyoruz
+      let url = `http://localhost:5000/api/tickets?userId=${userId}`;
+      
+      // Eğer 'All' değilse status parametresini ekle
+      if (status && status !== "All") {
+        url += `&status=${status}`;
+      }
+      
+      // Arama kelimesi varsa ekle
+      if (search) {
+        url += `&search=${search}`;
+      }
+
+      console.log("📡 İstek Atılıyor:", url); // Tarayıcı konsolunda (F12) görebilirsin
+      const res = await axios.get(url);
       setTickets(res.data);
     } catch (err) {
       console.error("Ticketlar çekilemedi:", err);
     }
   };
 
+  // 🔍 ARA BUTONUNA BASINCA
+  const handleSearchClick = () => {
+    if (user) {
+        fetchTickets(user._id, filterStatus, searchTerm);
+    }
+  };
+
+  // Yeni Talep Oluşturma
   const handleCreateTicket = async (e) => {
     e.preventDefault();
-    setLoading(true); // Yükleniyor başlat
+    setLoading(true); 
 
     try {
-      // Backend'e gönderirken boş alanlar otomatik gidecek
       await axios.post("http://localhost:5000/api/tickets", {
         student: user._id,
         title,
         description,
-        priority, // Eğer "" ise Backend'deki AI dolduracak
-        department // Eğer "" ise Backend'deki AI dolduracak
+        priority, 
+        department 
       });
 
       alert("Ticket Başarıyla Oluşturuldu! " + ((department === "" || priority === "") ? "(AI Tarafından Analiz Edildi 🤖)" : "✅"));
       
-      fetchTickets(user._id);
+      // Listeyi güncelle (Mevcut filtreleri koruyarak)
+      fetchTickets(user._id, filterStatus, searchTerm);
       
       // Formu Temizle
       setTitle("");
@@ -69,7 +100,7 @@ export default function Home() {
       alert("Hata oluştu! Lütfen tekrar deneyin.");
       console.error(err);
     } finally {
-      setLoading(false); // İşlem bitince yükleniyor durdur
+      setLoading(false); 
     }
   };
 
@@ -77,20 +108,6 @@ export default function Home() {
     localStorage.removeItem("user");
     navigate("/login");
   };
-
-  // --- FİLTRELEME MANTIĞI ---
-  const filteredTickets = tickets
-    .filter((ticket) => {
-      if (filterStatus === "All") return true;
-      return ticket.status === filterStatus;
-    })
-    .sort((a, b) => {
-      if (sortOrder === "Priority") {
-        const priorityMap = { High: 3, Medium: 2, Low: 1 };
-        return priorityMap[b.priority] - priorityMap[a.priority];
-      }
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
 
   if (!user) return null;
 
@@ -107,7 +124,7 @@ export default function Home() {
         <div style={{display:"flex", gap:"10px"}}>
             {(user.role === 'admin' || user.role === 'support' || user.role === 'department') && (
               <button onClick={() => navigate("/analytics")} className="btn-primary" style={{background:"#6f42c1"}}>
-                 📊 Raporlar
+                  📊 Raporlar
               </button>
             )}
             <button onClick={handleLogout} className="btn-danger">Çıkış Yap</button>
@@ -123,7 +140,6 @@ export default function Home() {
         </div>
 
         <form onSubmit={handleCreateTicket}>
-          
           <input 
             type="text" placeholder="Konu Başlığı (Örn: İnternet yok)" 
             value={title} onChange={(e) => setTitle(e.target.value)} required 
@@ -165,13 +181,64 @@ export default function Home() {
         </form>
       </div>
 
-      {/* LİSTELEME */}
-      <h3 style={{borderBottom: "2px solid #eee", paddingBottom: "10px"}}>📋 Taleplerim</h3>
-      {/* ... Filtreler aynı kalıyor ... */}
+      {/* 🛠️ YENİ: FİLTRELEME ALANI */}
+      <h3 style={{borderBottom: "2px solid #eee", paddingBottom: "10px", marginBottom: "15px"}}>📋 Taleplerim</h3>
       
-      {filteredTickets.length === 0 ? <p style={{textAlign:"center", color:"#888", padding:"20px"}}>Ticket yok.</p> : (
+      <div style={{ 
+          display: "flex", 
+          gap: "10px", 
+          marginBottom: "20px", 
+          background: "#fff", 
+          padding: "15px", 
+          borderRadius: "8px", 
+          border: "1px solid #ddd",
+          alignItems: "center"
+      }}>
+        
+        {/* Durum Filtresi */}
+        <div>
+            <span style={{fontSize: "12px", fontWeight: "bold", display: "block", marginBottom: "5px"}}>Durum Filtresi:</span>
+            <select 
+                value={filterStatus} 
+                onChange={(e) => setFilterStatus(e.target.value)}
+                style={{ width: "160px", margin: 0, padding: "8px" }}
+            >
+                <option value="All">Tüm Durumlar</option>
+                <option value="Open">Aktif (Open)</option>
+                <option value="Solved">Çözüldü (Solved)</option>
+                {/* Veritabanına göre Türkçe seçenekler */}
+                <option value="Çözüldü">Çözüldü (TR)</option> 
+                <option value="Beklemede">Beklemede</option>
+            </select>
+        </div>
+
+        {/* Arama Kutusu */}
+        <div style={{flex: 1}}>
+            <span style={{fontSize: "12px", fontWeight: "bold", display: "block", marginBottom: "5px"}}>Arama Yap:</span>
+            <div style={{display: "flex", gap: "5px"}}>
+                <input 
+                    type="text" 
+                    placeholder="Başlık veya içerikte ara..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{ flex: 1, margin: 0, padding: "8px" }}
+                />
+                <button className="btn-primary" onClick={handleSearchClick} style={{ margin: 0, padding: "8px 20px" }}>
+                    🔍 Ara
+                </button>
+            </div>
+        </div>
+      </div>
+
+      {/* LİSTELEME */}
+      {tickets.length === 0 ? (
+        <div style={{textAlign:"center", color:"#888", padding:"40px", background: "#f9f9f9", borderRadius: "8px"}}>
+            <h4>🔍 Kayıt Bulunamadı</h4>
+            <p>Filtre kriterlerinize uygun talep yok.</p>
+        </div>
+      ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-          {filteredTickets.map((ticket) => (
+          {tickets.map((ticket) => (
             <div key={ticket._id} className="ticket-card">
               <div className="ticket-header">
                 <h4 style={{ margin: "0", fontSize: "18px" }}>{ticket.title}</h4>
@@ -181,8 +248,16 @@ export default function Home() {
               <p style={{ margin: "10px 0 20px 0", color: "#555" }}>{ticket.description}</p>
               
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #eee", paddingTop: "15px" }}>
-                <span style={{ fontSize: "13px", color: "#888" }}>
-                    Durum: <strong style={{color:"black"}}>{ticket.status}</strong>
+                <span style={{ fontSize: "13px", color: "#555" }}>
+                    Durum: <strong style={{
+                        color: (ticket.status === 'Solved' || ticket.status === 'Çözüldü') ? '#28a745' : '#ffc107',
+                        border: "1px solid #ddd",
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                        backgroundColor: "#fff"
+                    }}>
+                        {ticket.status}
+                    </strong>
                 </span>
                 <button className="btn-primary" onClick={() => navigate(`/ticket/${ticket._id}`)}>
                     <span>İncele & Cevapla</span> 👉
